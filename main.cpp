@@ -1,16 +1,47 @@
 #include <iostream>
 #include <string>
 #include <map>
-#include <list>
-#include <regex>
-
+#include <vector>
+#include <sstream>
 #include <fstream>
+
 using namespace std;
 
+/**
+ * \brief Функция для получения вектора подстрок, разделенных символом
+ * \param[in] input Строка, из которой будут вырезаться подстроки
+ * \param[in] del Символ, по которому будет происходить деление
+ * \return вектор подстрок
+ */
 vector<string> split(const string& input, char del);
+/**
+ * \brief Функция для заполнения ассоциативного массива данными из таблицы
+ * \param[in] filename Название файла, из которого происходит чтение
+ * \param[out] table ассоциативный массив, хранящий в качесте ключа строку название столбца + название строки, а значения - содержимое ячейки
+ * \param[out] cellsToCompute вектор ключей, которые надо рассчитать
+ * \param[out] columns вектор названий столбцов
+ * \param[out] rows вектор названий строк
+ */
 void fillTable(string filename,map <string,string> &table, vector <string> &cellsToCompute,vector <string> &columns,vector <string> &rows);   
+/**
+ * \brief Вычисление выражения в ячейке
+ * \param[in] table ассоциативный массив, хранящий в качесте ключа строку название столбца + название строки, а значения - содержимое ячейки
+ * \param[in] cell Ключ ячейки
+ * \return вычисленное значение в ячейке
+ */
 int computeCell(map <string,string> &table, string cell);
+/**
+ * \brief Вычисление выражений в ячейках
+ * \param[in] table ассоциативный массив, хранящий в качесте ключа строку название столбца + название строки, а значения - содержимое ячейки
+ * \param[in] cellsToCompute Вектор ключей ячеек
+ */
 void computeCells(map <string,string> &table, vector <string> &cellsToCompute);
+/**
+ * \brief Вывод таблицы в консоль
+ * \param[in] table ассоциативный массив, хранящий в качесте ключа строку название столбца + название строки, а значения - содержимое ячейки
+ * \param[in] columns вектор названий столбцов
+ * \param[in] rows вектор названий строк
+ */
 void printTable(map <string,string> &table, vector <string> columns, vector <string> rows);
 
 int main (int argc, char* argv [])
@@ -54,19 +85,24 @@ void computeCells(map <string,string> &table, vector <string> &cellsToCompute){
 }
 int computeCell(map <string,string> &table, string cell){
     int result=0;
-
     if(table[cell].at(0)=='='){
         table[cell].erase(0,1);
 
-        if(table[cell].find('+')!= std::string::npos){
-            for(string subcell : split(table[cell],'+')){
-                try {
+        if(table[cell].find('+')!= std::string::npos)
+        {
+            for(string subcell : split(table[cell],'+'))
+            {
+                try 
+                {
                     result+=stoi(table[subcell]);
                 }
-                catch (const std::invalid_argument& ia) {
+                catch (const std::invalid_argument& ia) 
+                {
+                    cout<<"recurs"<<endl;
                     result+=computeCell(table,subcell);
                 }
             }
+            table[cell] = result;
 
         }
         else if(table[cell].find('-')!= std::string::npos)
@@ -75,7 +111,7 @@ int computeCell(map <string,string> &table, string cell){
             for(string subcell : split(table[cell],'-')){
                 try {
                     if(counter==0){
-                        result+=stoi(table[subcell]);
+                        result=stoi(table[subcell]);
                         counter++;
                     }
                     else
@@ -85,7 +121,8 @@ int computeCell(map <string,string> &table, string cell){
                 }
                 catch (const std::invalid_argument& ia) {
                     if(counter==0){
-                        result+=computeCell(table,subcell);
+                        result=computeCell(table,subcell);
+                        counter++;
                     }
                     else
                     {
@@ -111,11 +148,14 @@ int computeCell(map <string,string> &table, string cell){
         else if(table[cell].find('/')!= std::string::npos)
         {
             result=1;
+            int counter=0;
             for(string subcell : split(table[cell],'/')){
-                int counter=0;
-                try {
-                    if(counter==0){
-                        result*=stoi(table[subcell]);
+                
+                try 
+                {
+                    if(counter==0)
+                    {
+                        result=stoi(table[subcell]);
                         counter++;
                     }
                     else
@@ -123,9 +163,12 @@ int computeCell(map <string,string> &table, string cell){
                         result/=stoi(table[subcell]);
                     }                    
                 }
-                catch (const std::invalid_argument& ia) {
-                    if(counter==0){
-                        result*=computeCell(table,subcell);
+                catch (const std::invalid_argument& ia) 
+                {
+                    if(counter==0)
+                    {
+                        result=computeCell(table,subcell);
+                        counter++;
                     }
                     else
                     {
@@ -135,6 +178,7 @@ int computeCell(map <string,string> &table, string cell){
             }       
         }
     }
+    cout<<table[cell]<<"="<<result<<endl;
     return result;
         
 }
@@ -166,6 +210,7 @@ void fillTable(string filename,map <string,string> &table, vector <string> &cell
             rows.push_back(items[0]);
             for(string col : columns ){
                 if(counter<items.size()){
+                    cout<<col+items[0]<<")"<<items[counter]<<endl;
                     table[col+items[0]] = items[counter];
                     try {
                         stoi(items[counter++]);
