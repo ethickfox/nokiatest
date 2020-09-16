@@ -53,7 +53,7 @@ int main (int argc, char* argv [])
     if(argc > 1)
         fillTable(argv[1],table,cellsToCompute,columns,rows);
     else
-        fillTable("test.csv",table,cellsToCompute,columns,rows);        
+        fillTable("test1.csv",table,cellsToCompute,columns,rows);        
     computeCells(table,cellsToCompute);
     printTable(table,columns,rows);
 
@@ -80,7 +80,14 @@ void printTable(map <string,string> &table, vector <string> columns, vector <str
 }
 void computeCells(map <string,string> &table, vector <string> &cellsToCompute){
     for(string cell : cellsToCompute){
-        table[cell] = to_string (computeCell(table,cell));        
+        try{
+            stoi(table[cell]);  
+        }
+        catch(const std::invalid_argument& ia)
+        {
+            table[cell] = to_string (computeCell(table,cell));
+        }   
+           
     }
 }
 int computeCell(map <string,string> &table, string cell){
@@ -95,15 +102,13 @@ int computeCell(map <string,string> &table, string cell){
                 try 
                 {
                     result+=stoi(table[subcell]);
+
                 }
                 catch (const std::invalid_argument& ia) 
                 {
-                    cout<<"recurs"<<endl;
                     result+=computeCell(table,subcell);
                 }
             }
-            table[cell] = result;
-
         }
         else if(table[cell].find('-')!= std::string::npos)
         {
@@ -178,7 +183,7 @@ int computeCell(map <string,string> &table, string cell){
             }       
         }
     }
-    cout<<table[cell]<<"="<<result<<endl;
+    table[cell] = to_string(result);
     return result;
         
 }
@@ -210,7 +215,6 @@ void fillTable(string filename,map <string,string> &table, vector <string> &cell
             rows.push_back(items[0]);
             for(string col : columns ){
                 if(counter<items.size()){
-                    cout<<col+items[0]<<")"<<items[counter]<<endl;
                     table[col+items[0]] = items[counter];
                     try {
                         stoi(items[counter++]);
